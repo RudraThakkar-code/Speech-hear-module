@@ -437,3 +437,37 @@ This document defines the single source of truth for the clinical data collected
 | `action_performed` | CREATE, UPDATE, SOFT_DELETE | Enum | Yes | Valid enum | Auto-generated | System |
 | `changed_fields_snapshot` | JSON representation of the explicit diff/values changed | JSON | Yes | Valid JSON | Auto-generated | System |
 | `actor_id` | The user or system initiating the action | UUID | Yes | Valid ref | Auto-generated | System |
+
+## 32. Doctor Portal & Clinical Collaboration (Phase 18)
+
+| Field | Description | Data type | Required? | Validation | Data classification | Data provenance |
+|---|---|---|---|---|---|---|
+| **DoctorCaseAssignment** | | | | | | |
+| `assignment_id` | Unique ID for the doctor assignment | UUID | Yes | Unique | Auto-generated | System |
+| `case_id` | Link to the patient's case | UUID | Yes | Valid ref | Auto-generated | System |
+| `doctor_id` | Link to the assigned doctor | UUID | Yes | Valid ref | Auto-generated | System |
+| `role` | Role of the doctor in this case | Text | Yes | None | Structured Administrative/Workflow Data | Admin/Supervisor |
+| `assigned_at` | When the case was assigned | DateTime | Yes | Valid date | Auto-generated | System |
+| `ended_at` | When the assignment was concluded | DateTime | No | > Assigned Date | Auto-generated | System |
+| `status` | Status of the assignment | Text | Yes | None | Structured Administrative/Workflow Data | System/Doctor |
+| **ClinicalDiscussion** | | | | | | |
+| `discussion_id` | Unique ID for the discussion thread | UUID | Yes | Unique | Auto-generated | System |
+| `case_id` | Link to the clinical case | UUID | Yes | Valid ref | Auto-generated | System |
+| `encounter_id` | Optional link to an encounter | UUID | No | Valid ref | Auto-generated | System |
+| `topic` | Subject of the discussion | Text | Yes | None | Structured Observation | Clinician/Doctor |
+| `status` | Open, Resolved, Closed | Enum | Yes | Valid enum | Structured Observation | Clinician/Doctor |
+| `priority` | Low, Routine, Urgent | Enum | Yes | Valid enum | Structured Observation | Clinician/Doctor |
+| **ClinicalDiscussionMessage** | | | | | | |
+| `message_id` | Unique ID for the message | UUID | Yes | Unique | Auto-generated | System |
+| `discussion_id` | Link to the parent discussion | UUID | Yes | Valid ref | Auto-generated | System |
+| `author_id` | ID of the authoring clinician/doctor | UUID | Yes | Valid ref | Auto-generated | System |
+| `message_text` | Body of the message | Text | Yes | None | Structured Observation | Clinician/Doctor |
+| `linked_document_id` | Reference to a clinical document | UUID | No | Valid ref | Auto-generated | System |
+| `linked_record_id` | Generic reference to a clinical entity | UUID | No | Valid ref | Auto-generated | System |
+| **DoctorRecommendation** | | | | | | |
+| `recommendation_id` | Unique ID for the recommendation | UUID | Yes | Unique | Auto-generated | System |
+| `case_id` | Link to the clinical case | UUID | Yes | Valid ref | Auto-generated | System |
+| `doctor_id` | Link to the prescribing doctor | UUID | Yes | Valid ref | Auto-generated | System |
+| `discussion_id` | Optional link to a discussion context | UUID | No | Valid ref | Auto-generated | System |
+| `recommendation_text` | Explicit medical recommendation/action | Text | Yes | None | Professional Interpretation | Doctor |
+| `medical_diagnosis` | Distinct from provisional speech-language problems | Text | No | None | Professional Interpretation | Doctor |
