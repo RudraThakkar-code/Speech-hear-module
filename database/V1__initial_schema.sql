@@ -1,16 +1,7 @@
-# Clinical Database PostgreSQL Schema
 
-This document defines the raw executable PostgreSQL DDL mapping directly from the ER Data Model (v1.0) and the Master Clinical Data Dictionary (v1.0).
-
----
-
-## 1. Extensions
-```sql
 CREATE EXTENSION IF NOT EXISTS pgcrypto;
-```
 
-## 2. Enums
-```sql
+
 -- Identity Enums
 CREATE TYPE user_role AS ENUM ('PATIENT', 'PARENT_GUARDIAN', 'THERAPIST', 'SUPERVISOR', 'DOCTOR', 'ADMIN', 'SYSTEM');
 CREATE TYPE user_status AS ENUM ('ACTIVE', 'INACTIVE', 'SUSPENDED');
@@ -85,10 +76,8 @@ CREATE TYPE verification_status AS ENUM ('UNVERIFIED', 'VERIFIED');
 CREATE TYPE interpretation_status AS ENUM ('NOT_INTERPRETED', 'CLINICIAN_INTERPRETED');
 CREATE TYPE data_classification AS ENUM ('RAW', 'OBSERVATION', 'INTERPRETATION', 'AI_GENERATED');
 CREATE TYPE data_provenance AS ENUM ('PATIENT', 'PARENT', 'THERAPIST', 'SUPERVISOR', 'DOCTOR', 'SYSTEM');
-```
 
-## 3. User / Identity
-```sql
+
 CREATE TABLE "users" (
     user_id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     role user_role NOT NULL,
@@ -97,10 +86,8 @@ CREATE TABLE "users" (
     status user_status NOT NULL,
     created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
-```
 
-## 4. Reference Tables
-```sql
+
 CREATE TABLE language_reference (
     language_code VARCHAR(10) PRIMARY KEY,
     language_name TEXT NOT NULL
@@ -149,10 +136,8 @@ CREATE TABLE clinical_document (
     uploaded_at TIMESTAMP WITH TIME ZONE DEFAULT NOW() NOT NULL,
     classification document_classification NOT NULL
 );
-```
 
-## 5. Patient
-```sql
+
 CREATE TABLE patient (
     patient_id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
     legal_name TEXT NOT NULL,
@@ -176,10 +161,8 @@ CREATE TABLE patient (
 );
 
 ALTER TABLE clinical_document ADD CONSTRAINT fk_document_patient FOREIGN KEY (patient_id) REFERENCES patient(patient_id);
-```
 
-## 6. Case
-```sql
+
 CREATE TABLE clinical_case (
     case_id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
     patient_id UUID NOT NULL REFERENCES patient(patient_id) ON DELETE RESTRICT,
@@ -197,10 +180,8 @@ CREATE TABLE clinical_case (
 );
 
 ALTER TABLE clinical_document ADD CONSTRAINT fk_document_case FOREIGN KEY (case_id) REFERENCES clinical_case(case_id);
-```
 
-## 7. History / Version Tables (Case-scoped)
-```sql
+
 CREATE TABLE chief_complaint (
     history_id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
     case_id UUID NOT NULL REFERENCES clinical_case(case_id),
@@ -352,10 +333,8 @@ CREATE TABLE language_history_heard_at_home (
     language_code VARCHAR(10) NOT NULL REFERENCES language_reference(language_code),
     PRIMARY KEY(history_id, language_code)
 );
-```
 
-## 8. Encounter
-```sql
+
 CREATE TABLE encounter (
     encounter_id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
     case_id UUID NOT NULL REFERENCES clinical_case(case_id) ON DELETE RESTRICT,
@@ -379,10 +358,8 @@ CREATE TABLE encounter (
     version INT DEFAULT 1 NOT NULL,
     deleted_at TIMESTAMP WITH TIME ZONE
 );
-```
 
-## 9. Assessment Tables
-```sql
+
 CREATE TABLE hearing_screening (
     screening_id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
     encounter_id UUID NOT NULL REFERENCES encounter(encounter_id),
@@ -585,10 +562,8 @@ CREATE TABLE clinical_interpretation_problem (
     problem_code VARCHAR(50) NOT NULL REFERENCES clinical_problem_reference(problem_code),
     PRIMARY KEY(clinical_interpretation_id, problem_code)
 );
-```
 
-## 10. Therapy Tables
-```sql
+
 CREATE TABLE therapy_goal (
     goal_id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
     case_id UUID NOT NULL REFERENCES clinical_case(case_id),
@@ -725,10 +700,8 @@ CREATE TABLE progress_record (
     version INT DEFAULT 1 NOT NULL,
     deleted_at TIMESTAMP WITH TIME ZONE
 );
-```
 
-## 11. Supervision
-```sql
+
 CREATE TABLE supervisor_review (
     review_id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
     supervisor_id UUID NOT NULL REFERENCES "users"(user_id),
@@ -762,10 +735,8 @@ CREATE TABLE clinical_rating (
     assessment_reasoning_quality INT NOT NULL CHECK (assessment_reasoning_quality BETWEEN 1 AND 5),
     therapy_effectiveness_score INT NOT NULL CHECK (therapy_effectiveness_score BETWEEN 1 AND 5)
 );
-```
 
-## 12. Reports & Notifications
-```sql
+
 CREATE TABLE generated_report (
     generated_report_id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
     case_id UUID NOT NULL REFERENCES clinical_case(case_id),
@@ -781,10 +752,8 @@ CREATE TABLE notification (
     status notification_status NOT NULL DEFAULT 'UNREAD',
     created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW() NOT NULL
 );
-```
 
-## 13. Consent
-```sql
+
 CREATE TABLE consent (
     consent_id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
     patient_id UUID NOT NULL REFERENCES patient(patient_id),
@@ -800,10 +769,8 @@ CREATE TABLE consent (
     CONSTRAINT uq_patient_consent_version UNIQUE(patient_id, consent_version),
     CONSTRAINT chk_consent_withdrawn CHECK (withdrawn_at IS NULL OR withdrawn_at >= consented_at)
 );
-```
 
-## 14. AI Artifacts
-```sql
+
 CREATE TABLE ai_artifact (
     ai_artifact_id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
     source_speech_sample_id UUID REFERENCES speech_sample(sample_id),
@@ -828,10 +795,8 @@ CREATE TABLE ai_artifact (
         (human_review_status <> 'PENDING' AND reviewed_by IS NOT NULL AND reviewed_at IS NOT NULL)
     )
 );
-```
 
-## 15. Audit Log
-```sql
+
 CREATE TABLE audit_log (
     audit_log_id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
     table_name TEXT NOT NULL,
@@ -841,10 +806,8 @@ CREATE TABLE audit_log (
     actor_id UUID NOT NULL REFERENCES "users"(user_id),
     occurred_at TIMESTAMP WITH TIME ZONE DEFAULT NOW() NOT NULL
 );
-```
 
-## 16. Indexes
-```sql
+
 -- Identity & Access
 CREATE INDEX idx_patient_name ON patient(legal_name);
 CREATE INDEX idx_case_patient ON clinical_case(patient_id);
@@ -869,25 +832,3 @@ CREATE INDEX idx_supervisor_review_plan ON supervisor_review(reviewed_therapy_pl
 -- System
 CREATE INDEX idx_audit_record ON audit_log(table_name, record_id);
 CREATE INDEX idx_ai_artifact_sample ON ai_artifact(source_speech_sample_id);
-```
-
-## 17. CHECK constraints
-*All CHECK constraints (e.g. mutually exclusive polymorphic foreign keys, scores constrained 1-5, conditional field dependency logic, and start/end dates constraints) have been securely defined directly on the `CREATE TABLE` scripts in the sections above.*
-
-## 18. Seed/Reference data
-```sql
-INSERT INTO language_reference (language_code, language_name) VALUES
-('EN', 'English'),
-('HI', 'Hindi'),
-('GU', 'Gujarati');
-
-INSERT INTO clinical_problem_reference (problem_code, problem_name) VALUES
-('ARTIC', 'Articulation Difficulty'),
-('FLU', 'Fluency Concern'),
-('VOC', 'Voice Concern'),
-('LANG', 'Language Delay'),
-('HEAR', 'Hearing Related Concern');
-```
-
-## 19. Transaction-safe migration order
-*The order constructed in this document respects foreign key hierarchy for dependency-free drops and creations. For migrations, execute drops in exact reverse order to this file.*
