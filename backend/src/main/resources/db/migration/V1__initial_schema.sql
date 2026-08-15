@@ -832,3 +832,60 @@ CREATE INDEX idx_supervisor_review_plan ON supervisor_review(reviewed_therapy_pl
 -- System
 CREATE INDEX idx_audit_record ON audit_log(table_name, record_id);
 CREATE INDEX idx_ai_artifact_sample ON ai_artifact(source_speech_sample_id);
+
+-- ============================================================
+-- DOCTOR PORTAL & COLLABORATION (Phase 18)
+-- ============================================================
+
+CREATE TYPE clinical_discussion_status AS ENUM ('OPEN', 'RESOLVED', 'CLOSED');
+CREATE TYPE clinical_discussion_priority AS ENUM ('LOW', 'ROUTINE', 'URGENT');
+
+CREATE TABLE doctor_case_assignment (
+    assignment_id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+    case_id UUID NOT NULL REFERENCES clinical_case(case_id),
+    doctor_id UUID NOT NULL REFERENCES "users"(user_id),
+    role VARCHAR(50) NOT NULL,
+    assigned_at TIMESTAMP WITH TIME ZONE DEFAULT NOW() NOT NULL,
+    ended_at TIMESTAMP WITH TIME ZONE,
+    status VARCHAR(50) NOT NULL
+);
+
+CREATE TABLE clinical_discussion (
+    discussion_id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+    case_id UUID NOT NULL REFERENCES clinical_case(case_id),
+    encounter_id UUID REFERENCES encounter(encounter_id),
+    topic TEXT NOT NULL,
+    status clinical_discussion_status NOT NULL,
+    priority clinical_discussion_priority NOT NULL,
+
+    created_by UUID REFERENCES "users"(user_id),
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW() NOT NULL,
+    updated_at TIMESTAMP WITH TIME ZONE
+);
+
+CREATE TABLE clinical_discussion_message (
+    message_id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+    discussion_id UUID NOT NULL REFERENCES clinical_discussion(discussion_id) ON DELETE CASCADE,
+    author_id UUID NOT NULL REFERENCES "users"(user_id),
+    message_text TEXT NOT NULL,
+    linked_document_id UUID REFERENCES clinical_document(document_id),
+    linked_record_id UUID, -- Polymorphic fallback reference if they want to link to a generic clinical entity
+
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW() NOT NULL,
+    updated_at TIMESTAMP WITH TIME ZONE
+);
+
+CREATE TABLE doctor_recommendation (
+    recommendation_id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+    case_id UUID NOT NULL REFERENCES clinical_case(case_id),
+    doctor_id UUID NOT NULL REFERENCES "users"(user_id),
+    discussion_id UUID REFERENCES clinical_discussion(discussion_id),
+    recommendation_text TEXT NOT NULL,
+    medical_diagnosis TEXT, -- Distinct from provisional clinical problem
+
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW() NOT NULL,
+    updated_at TIMESTAMP WITH TIME ZONE
+);
+
+CREATE INDEX idx_doctor_case_assignment ON doctor_case_assignment(case_id);
+CREATE INDEX idx_clinical_discussion_case ON clinical_discussion(case_id);

@@ -523,3 +523,49 @@ Case 1 ─── N LanguageHistory (Versions)
 ## 20. Implementation Notes Summarized
 * **History Scope:** Abstracted to `Case` level with explicit versions, heavily preventing encounter-level repetition.
 * **Media / Auth / Identity:** To be implemented respectively via generic object storage (S3) and robust external auth providers outside PostgreSQL.
+
+---
+
+## 35. Doctor Portal & Clinical Collaboration (Phase 18)
+
+### 35.1 `DoctorCaseAssignment`
+Tracks cases referred to a medical doctor/clinician for review.
+* **PK**: `assignment_id` (UUID)
+* **FK**: `case_id` (UUID, NOT NULL) -> Ref: `ClinicalCase`
+* **FK**: `doctor_id` (UUID, NOT NULL) -> Ref: `User`
+* **Fields**:
+  * `role` (VARCHAR, NOT NULL)
+  * `assigned_at` (TIMESTAMP, NOT NULL)
+  * `ended_at` (TIMESTAMP, NULL)
+  * `status` (VARCHAR, NOT NULL)
+
+### 35.2 `ClinicalDiscussion`
+Auditable case-oriented professional discussion threads.
+* **PK**: `discussion_id` (UUID)
+* **FK**: `case_id` (UUID, NOT NULL) -> Ref: `ClinicalCase`
+* **FK**: `encounter_id` (UUID, NULL) -> Ref: `Encounter`
+* **Fields**:
+  * `topic` (TEXT, NOT NULL)
+  * `status` (ENUM, NOT NULL) -> `OPEN`, `RESOLVED`, `CLOSED`
+  * `priority` (ENUM, NOT NULL) -> `LOW`, `ROUTINE`, `URGENT`
+  * `created_by` (UUID, NOT NULL)
+  * `created_at` (TIMESTAMP, NOT NULL)
+
+### 35.3 `ClinicalDiscussionMessage`
+* **PK**: `message_id` (UUID)
+* **FK**: `discussion_id` (UUID, NOT NULL) -> Ref: `ClinicalDiscussion`
+* **FK**: `author_id` (UUID, NOT NULL) -> Ref: `User`
+* **FK**: `linked_document_id` (UUID, NULL) -> Ref: `ClinicalDocument`
+* **Fields**:
+  * `message_text` (TEXT, NOT NULL)
+  * `linked_record_id` (UUID, NULL) -- Polymorphic fallback
+
+### 35.4 `DoctorRecommendation`
+Discrete entity distinguishing explicit medical recommendations/diagnoses from provisional speech therapies.
+* **PK**: `recommendation_id` (UUID)
+* **FK**: `case_id` (UUID, NOT NULL) -> Ref: `ClinicalCase`
+* **FK**: `doctor_id` (UUID, NOT NULL) -> Ref: `User`
+* **FK**: `discussion_id` (UUID, NULL) -> Ref: `ClinicalDiscussion`
+* **Fields**:
+  * `recommendation_text` (TEXT, NOT NULL)
+  * `medical_diagnosis` (TEXT, NULL)
