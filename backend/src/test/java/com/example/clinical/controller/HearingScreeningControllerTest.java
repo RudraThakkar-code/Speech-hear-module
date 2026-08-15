@@ -121,6 +121,49 @@ class HearingScreeningControllerTest {
     }
 
     @Test
+    void shouldAcceptZeroDbIntensityAndRejectNegative() throws Exception {
+        // 1. Create Hearing Screening
+        Map<String, Object> screeningReq = new HashMap<>();
+        screeningReq.put("screeningDate", "2026-08-15");
+        screeningReq.put("screeningEnvironment", ScreeningEnvironment.SOUND_TREATED_ROOM.name());
+        screeningReq.put("screeningDeviceUsed", "Standard Audiometer");
+        screeningReq.put("screeningOutcome", ScreeningOutcome.NO_CONCERN.name());
+        screeningReq.put("recommendedAction", HearingRecommendedAction.NO_IMMEDIATE_ACTION.name());
+
+        MvcResult screeningResult = mockMvc.perform(post("/api/v1/encounters/" + encounter.getId() + "/hearing-screenings")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(screeningReq)))
+                .andExpect(status().isCreated())
+                .andReturn();
+
+        String screeningId = objectMapper.readTree(screeningResult.getResponse().getContentAsString()).get("id").asText();
+
+        // 2. Add Measurement with 0 dB (Should Accept)
+        Map<String, Object> measurementReq = new HashMap<>();
+        measurementReq.put("trialOrder", 1);
+        measurementReq.put("ear", EarType.LEFT.name());
+        measurementReq.put("frequencyPresented", 1000);
+        measurementReq.put("intensityPresented", 0);
+        measurementReq.put("responseMethod", ResponseMethod.BUTTON_PRESS.name());
+        measurementReq.put("patientResponse", PatientResponse.CONSISTENT.name());
+
+        mockMvc.perform(post("/api/v1/hearing-screenings/" + screeningId + "/measurements")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(measurementReq)))
+                .andExpect(status().isCreated())
+                .andExpect(jsonPath("$.intensityPresented").value(0));
+
+        // 3. Add Measurement with -10 dB (Should Reject 422 Unprocessable Entity - or 400 Bad Request depending on GlobalExceptionHandler)
+        Map<String, Object> negativeMeasurementReq = new HashMap<>(measurementReq);
+        negativeMeasurementReq.put("intensityPresented", -10);
+
+        mockMvc.perform(post("/api/v1/hearing-screenings/" + screeningId + "/measurements")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(negativeMeasurementReq)))
+                .andExpect(status().isUnprocessableEntity());
+    }
+
+    @Test
     void shouldReturn404ForUnknownEncounter() throws Exception {
         Map<String, Object> screeningReq = new HashMap<>();
         screeningReq.put("screeningDate", "2026-08-15");
@@ -132,6 +175,22 @@ class HearingScreeningControllerTest {
         mockMvc.perform(post("/api/v1/encounters/" + UUID.randomUUID() + "/hearing-screenings")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(screeningReq)))
+                .andExpect(status().isNotFound());
+    }
+
+    @Test
+    void shouldReturn404ForUnknownScreening() throws Exception {
+        Map<String, Object> measurementReq = new HashMap<>();
+        measurementReq.put("trialOrder", 1);
+        measurementReq.put("ear", EarType.LEFT.name());
+        measurementReq.put("frequencyPresented", 1000);
+        measurementReq.put("intensityPresented", 20);
+        measurementReq.put("responseMethod", ResponseMethod.BUTTON_PRESS.name());
+        measurementReq.put("patientResponse", PatientResponse.CONSISTENT.name());
+
+        mockMvc.perform(post("/api/v1/hearing-screenings/" + UUID.randomUUID() + "/measurements")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(measurementReq)))
                 .andExpect(status().isNotFound());
     }
 }

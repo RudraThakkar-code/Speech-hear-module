@@ -23,7 +23,7 @@ public class HearingMeasurementCreateRequest {
     private Integer frequencyPresented;
 
     @NotNull(message = "Intensity is required")
-    @PositiveOrZero(message = "Intensity must be zero or a positive integer")
+    @PositiveOrZero(message = "Intensity must be zero or positive integer")
     private Integer intensityPresented;
 
     @NotNull(message = "Response method is required")
