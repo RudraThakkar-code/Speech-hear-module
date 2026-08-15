@@ -5,6 +5,7 @@ import com.example.clinical.domain.enums.PatientResponse;
 import com.example.clinical.domain.enums.ResponseMethod;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Positive;
+import jakarta.validation.constraints.PositiveOrZero;
 import lombok.Data;
 
 @Data
@@ -22,7 +23,7 @@ public class HearingMeasurementCreateRequest {
     private Integer frequencyPresented;
 
     @NotNull(message = "Intensity is required")
-    @Positive(message = "Intensity must be a positive integer")
+    @PositiveOrZero(message = "Intensity must be zero or a positive integer")
     private Integer intensityPresented;
 
     @NotNull(message = "Response method is required")
