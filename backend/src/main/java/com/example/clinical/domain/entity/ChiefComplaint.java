@@ -5,8 +5,6 @@ import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-import org.hibernate.annotations.JdbcTypeCode;
-import org.hibernate.type.SqlTypes;
 
 import java.util.UUID;
 
@@ -42,7 +40,6 @@ public class ChiefComplaint extends AuditableEntity {
     private boolean previousConsultation;
 
     @Enumerated(EnumType.STRING)
-    @Column(name = "data_provenance", columnDefinition = "data_provenance")
-    @JdbcTypeCode(SqlTypes.NAMED_ENUM)
+    @Column(name = "data_provenance")
     private DataProvenance dataProvenance;
 }

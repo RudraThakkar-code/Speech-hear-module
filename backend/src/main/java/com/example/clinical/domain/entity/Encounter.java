@@ -6,8 +6,6 @@ import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-import org.hibernate.annotations.JdbcTypeCode;
-import org.hibernate.type.SqlTypes;
 
 import java.time.ZonedDateTime;
 import java.util.UUID;
@@ -29,16 +27,14 @@ public class Encounter extends AuditableEntity {
     private ClinicalCase clinicalCase;
 
     @Enumerated(EnumType.STRING)
-    @Column(name = "encounter_type", nullable = false, columnDefinition = "encounter_type")
-    @JdbcTypeCode(SqlTypes.NAMED_ENUM)
+    @Column(name = "encounter_type", nullable = false)
     private EncounterType encounterType;
 
     @Column(name = "encounter_date_time", nullable = false)
     private ZonedDateTime encounterDateTime;
 
     @Enumerated(EnumType.STRING)
-    @Column(name = "assessment_reason", nullable = false, columnDefinition = "assessment_reason")
-    @JdbcTypeCode(SqlTypes.NAMED_ENUM)
+    @Column(name = "assessment_reason", nullable = false)
     private AssessmentReason assessmentReason;
 
     // Active history links snapshot

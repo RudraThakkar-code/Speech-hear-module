@@ -7,14 +7,13 @@ import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-import org.hibernate.annotations.JdbcTypeCode;
-import org.hibernate.type.SqlTypes;
 
 import java.time.LocalDate;
 import java.util.UUID;
 
 @Entity
 @Table(name = "patient")
+
 @Getter
 @Setter
 @NoArgsConstructor
@@ -35,8 +34,7 @@ public class Patient extends AuditableEntity {
     private LocalDate dateOfBirth;
 
     @Enumerated(EnumType.STRING)
-    @Column(name = "sex_at_birth", columnDefinition = "sex_at_birth")
-    @JdbcTypeCode(SqlTypes.NAMED_ENUM)
+    @Column(name = "sex_at_birth")
     private SexAtBirth sexAtBirth;
 
     @Column(name = "gender_identity")
@@ -52,12 +50,10 @@ public class Patient extends AuditableEntity {
     private String homeAddress;
 
     @Enumerated(EnumType.STRING)
-    @Column(name = "data_provenance", columnDefinition = "data_provenance")
-    @JdbcTypeCode(SqlTypes.NAMED_ENUM)
+    @Column(name = "data_provenance")
     private DataProvenance dataProvenance;
 
     @Enumerated(EnumType.STRING)
-    @Column(name = "data_classification", columnDefinition = "data_classification")
-    @JdbcTypeCode(SqlTypes.NAMED_ENUM)
+    @Column(name = "data_classification")
     private DataClassification dataClassification;
 }

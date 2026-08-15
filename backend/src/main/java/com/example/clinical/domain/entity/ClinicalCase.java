@@ -5,8 +5,6 @@ import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-import org.hibernate.annotations.JdbcTypeCode;
-import org.hibernate.type.SqlTypes;
 
 import java.util.UUID;
 
@@ -27,8 +25,7 @@ public class ClinicalCase extends AuditableEntity {
     private Patient patient;
 
     @Enumerated(EnumType.STRING)
-    @Column(name = "case_status", nullable = false, columnDefinition = "case_status")
-    @JdbcTypeCode(SqlTypes.NAMED_ENUM)
+    @Column(name = "case_status", nullable = false)
     private CaseStatus caseStatus;
 
     @ManyToOne(fetch = FetchType.LAZY)

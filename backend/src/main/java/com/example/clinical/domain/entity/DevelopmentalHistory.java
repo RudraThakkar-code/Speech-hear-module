@@ -5,8 +5,6 @@ import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-import org.hibernate.annotations.JdbcTypeCode;
-import org.hibernate.type.SqlTypes;
 
 import java.util.UUID;
 
@@ -36,8 +34,7 @@ public class DevelopmentalHistory extends AuditableEntity {
     private Integer milestoneWalkingAge;
 
     @Enumerated(EnumType.STRING)
-    @Column(name = "motor_milestones_status", nullable = false, columnDefinition = "motor_milestones_status")
-    @JdbcTypeCode(SqlTypes.NAMED_ENUM)
+    @Column(name = "motor_milestones_status", nullable = false)
     private MotorMilestonesStatus motorMilestonesStatus;
 
     @Column(name = "motor_milestones_details")
