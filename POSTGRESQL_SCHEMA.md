@@ -111,6 +111,18 @@ CREATE TABLE clinical_problem_reference (
     problem_name TEXT NOT NULL
 );
 
+CREATE TABLE clinical_document (
+    document_id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+    patient_id UUID NOT NULL, -- FK constraint applied after patient creation
+    case_id UUID,             -- FK constraint applied after case creation
+    uploaded_by UUID NOT NULL REFERENCES "users"(user_id),
+    storage_url TEXT NOT NULL,
+    mime_type TEXT,
+    file_name TEXT,
+    uploaded_at TIMESTAMP WITH TIME ZONE DEFAULT NOW() NOT NULL,
+    classification document_classification NOT NULL
+);
+
 CREATE TABLE assessment_task_library (
     task_id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
     task_version INT NOT NULL,
@@ -136,18 +148,6 @@ CREATE TABLE articulation_target_library (
     created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW() NOT NULL,
     retired_at TIMESTAMP WITH TIME ZONE,
     CONSTRAINT uq_articulation_target UNIQUE (language_code, target_type, phoneme, word, position, target_version)
-);
-
-CREATE TABLE clinical_document (
-    document_id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
-    patient_id UUID NOT NULL, -- FK constraint applied after patient creation
-    case_id UUID,             -- FK constraint applied after case creation
-    uploaded_by UUID NOT NULL REFERENCES "users"(user_id),
-    storage_url TEXT NOT NULL,
-    mime_type TEXT,
-    file_name TEXT,
-    uploaded_at TIMESTAMP WITH TIME ZONE DEFAULT NOW() NOT NULL,
-    classification document_classification NOT NULL
 );
 ```
 
@@ -879,14 +879,18 @@ CREATE INDEX idx_ai_artifact_sample ON ai_artifact(source_speech_sample_id);
 INSERT INTO language_reference (language_code, language_name) VALUES
 ('EN', 'English'),
 ('HI', 'Hindi'),
-('GU', 'Gujarati');
+('GU', 'Gujarati')
+ON CONFLICT (language_code) DO UPDATE
+SET language_name = EXCLUDED.language_name;
 
 INSERT INTO clinical_problem_reference (problem_code, problem_name) VALUES
 ('ARTIC', 'Articulation Difficulty'),
 ('FLU', 'Fluency Concern'),
 ('VOC', 'Voice Concern'),
 ('LANG', 'Language Delay'),
-('HEAR', 'Hearing Related Concern');
+('HEAR', 'Hearing Related Concern')
+ON CONFLICT (problem_code) DO UPDATE
+SET problem_name = EXCLUDED.problem_name;
 ```
 
 ## 19. Transaction-safe migration order

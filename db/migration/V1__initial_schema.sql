@@ -98,6 +98,18 @@ CREATE TABLE clinical_problem_reference (
     problem_name TEXT NOT NULL
 );
 
+CREATE TABLE clinical_document (
+    document_id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+    patient_id UUID NOT NULL, -- FK constraint applied after patient creation
+    case_id UUID,             -- FK constraint applied after case creation
+    uploaded_by UUID NOT NULL REFERENCES "users"(user_id),
+    storage_url TEXT NOT NULL,
+    mime_type TEXT,
+    file_name TEXT,
+    uploaded_at TIMESTAMP WITH TIME ZONE DEFAULT NOW() NOT NULL,
+    classification document_classification NOT NULL
+);
+
 CREATE TABLE assessment_task_library (
     task_id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
     task_version INT NOT NULL,
@@ -123,18 +135,6 @@ CREATE TABLE articulation_target_library (
     created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW() NOT NULL,
     retired_at TIMESTAMP WITH TIME ZONE,
     CONSTRAINT uq_articulation_target UNIQUE (language_code, target_type, phoneme, word, position, target_version)
-);
-
-CREATE TABLE clinical_document (
-    document_id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
-    patient_id UUID NOT NULL, -- FK constraint applied after patient creation
-    case_id UUID,             -- FK constraint applied after case creation
-    uploaded_by UUID NOT NULL REFERENCES "users"(user_id),
-    storage_url TEXT NOT NULL,
-    mime_type TEXT,
-    file_name TEXT,
-    uploaded_at TIMESTAMP WITH TIME ZONE DEFAULT NOW() NOT NULL,
-    classification document_classification NOT NULL
 );
 
 
