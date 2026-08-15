@@ -7,6 +7,9 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.type.SqlTypes;
+
 import java.util.UUID;
 
 @Entity
@@ -44,10 +47,12 @@ public class FamilyHistory extends AuditableEntity {
     private String otherRelevantFamilyHx;
 
     @Enumerated(EnumType.STRING)
-    @Column(name = "data_provenance")
+    @Column(name = "data_provenance", columnDefinition = "data_provenance")
+    @JdbcTypeCode(SqlTypes.NAMED_ENUM)
     private DataProvenance dataProvenance;
 
     @Enumerated(EnumType.STRING)
-    @Column(name = "verification_status")
+    @Column(name = "verification_status", columnDefinition = "verification_status")
+    @JdbcTypeCode(SqlTypes.NAMED_ENUM)
     private VerificationStatus verificationStatus;
 }

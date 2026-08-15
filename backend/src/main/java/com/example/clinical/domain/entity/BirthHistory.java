@@ -9,6 +9,9 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import java.math.BigDecimal;
+import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.type.SqlTypes;
+
 import java.util.UUID;
 
 @Entity
@@ -37,11 +40,13 @@ public class BirthHistory extends AuditableEntity {
     private String pregnancyComplicationDetails;
 
     @Enumerated(EnumType.STRING)
-    @Column(name = "delivery_type", nullable = false)
+    @Column(name = "delivery_type", nullable = false, columnDefinition = "delivery_type")
+    @JdbcTypeCode(SqlTypes.NAMED_ENUM)
     private DeliveryType deliveryType;
 
     @Enumerated(EnumType.STRING)
-    @Column(name = "prematurity_status", nullable = false)
+    @Column(name = "prematurity_status", nullable = false, columnDefinition = "prematurity_status")
+    @JdbcTypeCode(SqlTypes.NAMED_ENUM)
     private PrematurityStatus prematurityStatus;
 
     @Column(name = "birth_weight")
@@ -54,6 +59,7 @@ public class BirthHistory extends AuditableEntity {
     private String otherRelevantBirthHx;
 
     @Enumerated(EnumType.STRING)
-    @Column(name = "data_provenance")
+    @Column(name = "data_provenance", columnDefinition = "data_provenance")
+    @JdbcTypeCode(SqlTypes.NAMED_ENUM)
     private DataProvenance dataProvenance;
 }

@@ -9,6 +9,9 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import java.time.LocalDate;
+import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.type.SqlTypes;
+
 import java.util.UUID;
 
 @Entity
@@ -34,7 +37,8 @@ public class Patient extends AuditableEntity {
     private LocalDate dateOfBirth;
 
     @Enumerated(EnumType.STRING)
-    @Column(name = "sex_at_birth")
+    @Column(name = "sex_at_birth", columnDefinition = "sex_at_birth")
+    @JdbcTypeCode(SqlTypes.NAMED_ENUM)
     private SexAtBirth sexAtBirth;
 
     @Column(name = "gender_identity")
@@ -50,10 +54,12 @@ public class Patient extends AuditableEntity {
     private String homeAddress;
 
     @Enumerated(EnumType.STRING)
-    @Column(name = "data_provenance")
+    @Column(name = "data_provenance", columnDefinition = "data_provenance")
+    @JdbcTypeCode(SqlTypes.NAMED_ENUM)
     private DataProvenance dataProvenance;
 
     @Enumerated(EnumType.STRING)
-    @Column(name = "data_classification")
+    @Column(name = "data_classification", columnDefinition = "data_classification")
+    @JdbcTypeCode(SqlTypes.NAMED_ENUM)
     private DataClassification dataClassification;
 }

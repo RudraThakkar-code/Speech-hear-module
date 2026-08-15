@@ -1,0 +1,12 @@
+CREATE DOMAIN user_role AS VARCHAR;
+CREATE DOMAIN user_status AS VARCHAR;
+CREATE DOMAIN sex_at_birth AS VARCHAR;
+CREATE DOMAIN data_provenance AS VARCHAR;
+CREATE DOMAIN data_classification AS VARCHAR;
+CREATE DOMAIN case_status AS VARCHAR;
+CREATE DOMAIN encounter_type AS VARCHAR;
+CREATE DOMAIN assessment_reason AS VARCHAR;
+CREATE DOMAIN delivery_type AS VARCHAR;
+CREATE DOMAIN prematurity_status AS VARCHAR;
+CREATE DOMAIN motor_milestones_status AS VARCHAR;
+CREATE DOMAIN verification_status AS VARCHAR;

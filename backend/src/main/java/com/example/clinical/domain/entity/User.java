@@ -9,6 +9,9 @@ import lombok.Setter;
 import org.hibernate.annotations.CreationTimestamp;
 
 import java.time.ZonedDateTime;
+import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.type.SqlTypes;
+
 import java.util.UUID;
 
 @Entity
@@ -25,7 +28,8 @@ public class User {
     private UUID id;
 
     @Enumerated(EnumType.STRING)
-    @Column(name = "role", nullable = false)
+    @Column(name = "role", nullable = false, columnDefinition = "user_role")
+    @JdbcTypeCode(SqlTypes.NAMED_ENUM)
     private UserRole role;
 
     @Column(name = "name", nullable = false)
@@ -35,7 +39,8 @@ public class User {
     private String email;
 
     @Enumerated(EnumType.STRING)
-    @Column(name = "status", nullable = false)
+    @Column(name = "status", nullable = false, columnDefinition = "user_status")
+    @JdbcTypeCode(SqlTypes.NAMED_ENUM)
     private UserStatus status;
 
     @CreationTimestamp
