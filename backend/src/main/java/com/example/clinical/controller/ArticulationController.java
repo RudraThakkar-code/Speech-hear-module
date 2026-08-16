@@ -1,0 +1,4 @@
+package com.example.clinical.controller;
+import com.example.clinical.dto.*; import com.example.clinical.service.ArticulationService; import jakarta.validation.Valid; import lombok.RequiredArgsConstructor; import org.springframework.http.HttpStatus; import org.springframework.web.bind.annotation.*; import java.util.UUID;
+@RestController @RequestMapping("/api/articulation") @RequiredArgsConstructor
+public class ArticulationController { private final ArticulationService service; @PostMapping("/productions") public org.springframework.http.ResponseEntity<ArticulationProductionResponse> create(@Valid @RequestBody ArticulationProductionRequest request){return org.springframework.http.ResponseEntity.status(HttpStatus.CREATED).body(service.create(request));} @GetMapping("/productions/{id}") public ArticulationProductionResponse get(@PathVariable UUID id){return service.get(id);} }
