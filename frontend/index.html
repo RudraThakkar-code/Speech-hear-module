@@ -1,0 +1,57 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Speech-Language Clinical Management</title>
+  <link rel="stylesheet" href="./styles.css">
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand">Speech-Language Clinical Management</div>
+    <nav>
+      <button data-view="dashboard">Dashboard</button>
+      <button data-view="patients">Patients</button>
+      <button data-view="assessments">Assessments</button>
+      <button data-view="supervision">Supervision</button>
+      <button data-view="doctor">Doctor Portal</button>
+    </nav>
+  </header>
+
+  <main id="app" class="container"></main>
+
+  <template id="dashboard-template">
+    <section>
+      <h1>Clinical Dashboard</h1>
+      <div class="grid">
+        <article class="card"><h2>Active Cases</h2><p id="activeCases">—</p></article>
+        <article class="card"><h2>Pending Reviews</h2><p id="pendingReviews">—</p></article>
+        <article class="card"><h2>Follow-ups</h2><p id="followUps">—</p></article>
+        <article class="card"><h2>Doctor Discussions</h2><p id="discussions">—</p></article>
+      </div>
+      <div class="card flow-card">
+        <h2>Clinical Flow</h2>
+        <div class="flow">Patient → Case → Encounter → Hearing → Speech Sample → Articulation → Fluency → Interpretation → Supervisor → Follow-up</div>
+      </div>
+    </section>
+  </template>
+
+  <template id="patients-template">
+    <section><h1>Patients</h1><div class="card"><p>Patient registration and longitudinal case management interface.</p><button class="primary">New Patient</button></div></section>
+  </template>
+
+  <template id="assessments-template">
+    <section><h1>Clinical Assessments</h1><div class="grid three"><article class="card">Hearing Screening</article><article class="card">Speech Sampling</article><article class="card">Articulation</article><article class="card">Fluency</article><article class="card">Clinical Interpretation</article><article class="card">Provisional Assessment</article></div></section>
+  </template>
+
+  <template id="supervision-template">
+    <section><h1>Supervisor Review</h1><div class="card"><p>DRAFT → SUBMITTED → UNDER REVIEW → FINALIZED</p><div class="review-actions"><button>Approve</button><button>Return for Correction</button><button>Modify</button></div></div></section>
+  </template>
+
+  <template id="doctor-template">
+    <section><h1>Doctor Portal</h1><div class="grid"><article class="card"><h2>Assigned Cases</h2><p>Review assigned clinical cases.</p></article><article class="card"><h2>Clinical Discussions</h2><p>Collaborate with therapists and supervisors.</p></article><article class="card"><h2>Recommendations</h2><p>Record medical recommendations separately from provisional problems.</p></article></div></section>
+  </template>
+
+  <script src="./app.js" defer></script>
+</body>
+</html>
