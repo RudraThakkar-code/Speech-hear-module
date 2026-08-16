@@ -57,6 +57,12 @@ class HearingScreeningControllerTest {
         therapist.setStatus(UserStatus.ACTIVE);
         therapist = userRepository.saveAndFlush(therapist);
 
+        User supervisor = new User();
+        supervisor.setName("Dr. Supervisor");
+        supervisor.setRole(UserRole.SUPERVISOR);
+        supervisor.setStatus(UserStatus.ACTIVE);
+        supervisor = userRepository.saveAndFlush(supervisor);
+
         Patient patient = new Patient();
         patient.setLegalName("Jane Doe");
         patient.setDateOfBirth(LocalDate.of(2010, 1, 1));
@@ -67,7 +73,7 @@ class HearingScreeningControllerTest {
         clinicalCase.setPatient(patient);
         clinicalCase.setCaseStatus(CaseStatus.ACTIVE);
         clinicalCase.setAssignedTherapist(therapist);
-        clinicalCase.setAssignedSupervisor(therapist);
+        clinicalCase.setAssignedSupervisor(supervisor);
         clinicalCase = clinicalCaseRepository.saveAndFlush(clinicalCase);
 
         encounter = new Encounter();
