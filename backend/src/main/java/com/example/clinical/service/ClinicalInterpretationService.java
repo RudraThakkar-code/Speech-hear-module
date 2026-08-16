@@ -15,6 +15,7 @@ import com.example.clinical.repository.ClinicalInterpretationRepository;
 import com.example.clinical.repository.ClinicalProblemReferenceRepository;
 import com.example.clinical.repository.EncounterRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -30,6 +31,7 @@ public class ClinicalInterpretationService {
     private final ClinicalInterpretationRepository interpretationRepository;
     private final EncounterRepository encounterRepository;
     private final ClinicalProblemReferenceRepository problemReferenceRepository;
+    private final JdbcTemplate jdbcTemplate;
 
     @Transactional
     public ClinicalInterpretationResponse createInterpretation(UUID encounterId, ClinicalInterpretationRequest request) {
@@ -42,8 +44,7 @@ public class ClinicalInterpretationService {
         interpretation.setClinicalAssessmentStatus(request.getClinicalAssessmentStatus());
         interpretation.setRecommendedAction(request.getRecommendedAction());
 
-        ClinicalInterpretation saved = interpretationRepository.save(interpretation);
-        return mapToResponse(saved);
+        return mapToResponse(interpretationRepository.save(interpretation));
     }
 
     @Transactional(readOnly = true)
@@ -54,32 +55,68 @@ public class ClinicalInterpretationService {
     }
 
     @Transactional
+    public ClinicalInterpretationResponse submitInterpretation(UUID interpretationId) {
+        ClinicalInterpretation interpretation = getRequired(interpretationId);
+        if (interpretation.getClinicalAssessmentStatus() != ClinicalAssessmentStatus.DRAFT) {
+            throw new IllegalStateException("Only a DRAFT clinical interpretation can be submitted");
+        }
+        snapshot(interpretation);
+        interpretation.setClinicalAssessmentStatus(ClinicalAssessmentStatus.SUBMITTED);
+        return mapToResponse(interpretationRepository.save(interpretation));
+    }
+
+    @Transactional
     public ProvisionalAssessmentResponse recordProvisionalAssessment(UUID interpretationId, ProvisionalAssessmentRequest request) {
-        ClinicalInterpretation interpretation = interpretationRepository.findById(interpretationId)
-                .orElseThrow(() -> new IllegalArgumentException("Clinical Interpretation not found"));
+        ClinicalInterpretation interpretation = getRequired(interpretationId);
 
         if (interpretation.getClinicalAssessmentStatus() == ClinicalAssessmentStatus.FINALIZED) {
             throw new IllegalStateException("Cannot modify a finalized clinical interpretation");
         }
+        if (interpretation.getClinicalAssessmentStatus() == ClinicalAssessmentStatus.UNDER_REVIEW) {
+            throw new IllegalStateException("Cannot modify a clinical interpretation under review");
+        }
 
+        snapshot(interpretation);
         interpretation.setRecommendedAction(request.getRecommendedAction());
 
-        // Clear existing problems
         Set<ClinicalInterpretationProblem> existingProblems = Set.copyOf(interpretation.getProblems());
         existingProblems.forEach(interpretation::removeProblem);
 
-        // Add new problems
         for (ProvisionalProblemRequest problemReq : request.getProblems()) {
             ClinicalProblemReference problemRef = problemReferenceRepository.findById(problemReq.getProblemCode())
                     .orElseThrow(() -> new IllegalArgumentException("Invalid clinical problem code: " + problemReq.getProblemCode()));
-
-            ClinicalInterpretationProblem problem = new ClinicalInterpretationProblem(interpretation, problemRef);
-            interpretation.addProblem(problem);
+            interpretation.addProblem(new ClinicalInterpretationProblem(interpretation, problemRef));
         }
 
-        ClinicalInterpretation saved = interpretationRepository.save(interpretation);
+        return mapToProvisionalResponse(interpretationRepository.save(interpretation));
+    }
 
-        return mapToProvisionalResponse(saved);
+    private ClinicalInterpretation getRequired(UUID id) {
+        return interpretationRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("Clinical Interpretation not found"));
+    }
+
+    private void snapshot(ClinicalInterpretation interpretation) {
+        int version = interpretation.getVersion() == null ? 1 : interpretation.getVersion();
+        jdbcTemplate.update("""
+                INSERT INTO clinical_interpretation_history
+                (clinical_interpretation_id, version_number, evidence_summary, clinical_assessment_status, recommended_action)
+                VALUES (?, ?, ?, CAST(? AS clinical_assessment_status), CAST(? AS clinical_recommended_action))
+                ON CONFLICT (clinical_interpretation_id, version_number) DO NOTHING
+                """,
+                interpretation.getClinicalInterpretationId(), version,
+                interpretation.getEvidenceSummary(),
+                interpretation.getClinicalAssessmentStatus().name(),
+                interpretation.getRecommendedAction().name());
+
+        jdbcTemplate.update("""
+                INSERT INTO clinical_interpretation_problem_history
+                (clinical_interpretation_id, version_number, problem_code)
+                SELECT clinical_interpretation_id, ?, problem_code
+                FROM clinical_interpretation_problem
+                WHERE clinical_interpretation_id = ?
+                ON CONFLICT (clinical_interpretation_id, version_number, problem_code) DO NOTHING
+                """, version, interpretation.getClinicalInterpretationId());
     }
 
     private ClinicalInterpretationResponse mapToResponse(ClinicalInterpretation interpretation) {
