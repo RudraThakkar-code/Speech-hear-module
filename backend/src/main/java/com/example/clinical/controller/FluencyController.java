@@ -1,0 +1,4 @@
+package com.example.clinical.controller;
+import com.example.clinical.dto.*; import com.example.clinical.service.FluencyService; import jakarta.validation.Valid; import lombok.RequiredArgsConstructor; import org.springframework.http.HttpStatus; import org.springframework.web.bind.annotation.*; import java.util.UUID;
+@RestController @RequestMapping("/api/fluency") @RequiredArgsConstructor
+public class FluencyController { private final FluencyService service; @PostMapping("/assessments") public org.springframework.http.ResponseEntity<FluencyAssessmentResponse> create(@Valid @RequestBody FluencyAssessmentRequest request){return org.springframework.http.ResponseEntity.status(HttpStatus.CREATED).body(service.create(request));} @GetMapping("/assessments/{id}") public FluencyAssessmentResponse get(@PathVariable UUID id){return service.get(id);} }
