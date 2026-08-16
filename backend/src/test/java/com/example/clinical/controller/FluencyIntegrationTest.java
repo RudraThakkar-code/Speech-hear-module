@@ -207,4 +207,20 @@ class FluencyIntegrationTest {
                 .content(objectMapper.writeValueAsString(req)))
                 .andExpect(status().isBadRequest());
     }
+
+    @Test
+    void shouldReturn422ForNegativeValues() throws Exception {
+        Map<String, Object> req = new HashMap<>();
+        req.put("fluencySampleId", speechSample.getId().toString());
+        req.put("speechRateObservation", SpeechRateObservation.FAST.name());
+        req.put("speechRateValue", -10.5); // Invalid negative value
+        req.put("repetitionCount", -5);    // Invalid negative value
+
+        mockMvc.perform(post("/api/v1/encounters/" + encounter.getId() + "/fluency")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(req)))
+                .andExpect(status().isUnprocessableEntity())
+                .andExpect(jsonPath("$.speechRateValue").exists())
+                .andExpect(jsonPath("$.repetitionCount").exists());
+    }
 }

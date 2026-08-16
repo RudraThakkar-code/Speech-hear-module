@@ -3,6 +3,7 @@ package com.example.clinical.controller;
 import com.example.clinical.dto.FluencyAssessmentCreateRequest;
 import com.example.clinical.dto.FluencyAssessmentResponse;
 import com.example.clinical.service.FluencyService;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
@@ -21,7 +22,7 @@ public class FluencyController {
     @ResponseStatus(HttpStatus.CREATED)
     public FluencyAssessmentResponse createFluencyAssessment(
             @PathVariable UUID encounterId,
-            @RequestBody FluencyAssessmentCreateRequest request) {
+            @Valid @RequestBody FluencyAssessmentCreateRequest request) {
         return fluencyService.createFluencyAssessment(encounterId, request);
     }
 
