@@ -39,6 +39,12 @@ public class ClinicalInterpretationController {
         return ResponseEntity.ok(interpretationService.getInterpretation(interpretationId));
     }
 
+    @PostMapping("/clinical-interpretations/{interpretationId}/submit")
+    public ResponseEntity<ClinicalInterpretationResponse> submitInterpretation(
+            @PathVariable UUID interpretationId) {
+        return ResponseEntity.ok(interpretationService.submitInterpretation(interpretationId));
+    }
+
     @PostMapping("/clinical-interpretations/{interpretationId}/provisional-assessment")
     public ResponseEntity<ProvisionalAssessmentResponse> recordProvisionalAssessment(
             @PathVariable UUID interpretationId,
