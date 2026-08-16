@@ -1,0 +1,9 @@
+package com.example.clinical.service;
+import com.example.clinical.domain.entity.*; import com.example.clinical.dto.*; import com.example.clinical.repository.*; import lombok.RequiredArgsConstructor; import org.springframework.stereotype.Service; import org.springframework.transaction.annotation.Transactional;
+@Service @RequiredArgsConstructor
+public class FluencyService {
+ private final FluencyAssessmentRepository assessments; private final EncounterRepository encounters; private final SpeechSampleRepository samples;
+ @Transactional public FluencyAssessmentResponse create(FluencyAssessmentRequest r){Encounter e=encounters.findById(r.encounterId()).orElseThrow(()->new IllegalArgumentException("Encounter not found")); SpeechSample s=samples.findById(r.fluencySampleId()).orElseThrow(()->new IllegalArgumentException("Speech sample not found")); FluencyAssessment a=new FluencyAssessment(); a.setEncounter(e); a.setFluencySample(s); a.setSpeechRateObservation(r.speechRateObservation()); a.setSpeechRateValue(r.speechRateValue()); a.setSpeechRateUnit(r.speechRateUnit()); a.setTotalSyllables(r.totalSyllables()); a.setTotalWords(r.totalWords()); a.setRepetitionCount(r.repetitionCount()); a.setProlongationDurationEst(r.prolongationDurationEst()); a.setBlockDurationEst(r.blockDurationEst()); a.setAtypicalPauseCount(r.atypicalPauseCount()); return map(assessments.save(a));}
+ @Transactional(readOnly=true) public FluencyAssessmentResponse get(java.util.UUID id){return map(assessments.findById(id).orElseThrow(()->new IllegalArgumentException("Fluency assessment not found")));}
+ private FluencyAssessmentResponse map(FluencyAssessment a){return new FluencyAssessmentResponse(a.getId(),a.getEncounter().getId(),a.getFluencySample().getId(),a.getSpeechRateObservation(),a.getSpeechRateValue(),a.getSpeechRateUnit(),a.getTotalSyllables(),a.getTotalWords(),a.getRepetitionCount(),a.getProlongationDurationEst(),a.getBlockDurationEst(),a.getAtypicalPauseCount());}
+}
