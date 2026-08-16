@@ -41,6 +41,12 @@ public class ClinicalInterpretationServiceTest {
     @Mock
     private ClinicalProblemReferenceRepository problemReferenceRepository;
 
+    @Mock
+    private com.example.clinical.repository.ClinicalInterpretationHistoryRepository historyRepository;
+
+    @Mock
+    private com.example.clinical.repository.ClinicalInterpretationProblemHistoryRepository problemHistoryRepository;
+
     @InjectMocks
     private ClinicalInterpretationService service;
 
@@ -113,5 +119,23 @@ public class ClinicalInterpretationServiceTest {
         when(interpretationRepository.findById(interpretationId)).thenReturn(Optional.of(interpretation));
 
         assertThrows(IllegalStateException.class, () -> service.recordProvisionalAssessment(interpretationId, request));
+    }
+
+    @Test
+    void shouldSubmitInterpretationAndSnapshot() {
+        UUID interpretationId = UUID.randomUUID();
+        ClinicalInterpretation interpretation = new ClinicalInterpretation();
+        interpretation.setClinicalInterpretationId(interpretationId);
+        interpretation.setClinicalAssessmentStatus(ClinicalAssessmentStatus.DRAFT);
+        interpretation.setVersion(1);
+
+        when(interpretationRepository.findById(interpretationId)).thenReturn(Optional.of(interpretation));
+        when(interpretationRepository.save(any())).thenReturn(interpretation);
+
+        ClinicalInterpretationResponse response = service.submitInterpretation(interpretationId);
+
+        assertNotNull(response);
+        assertEquals(ClinicalAssessmentStatus.SUBMITTED, response.getClinicalAssessmentStatus());
+        org.mockito.Mockito.verify(historyRepository).save(any(com.example.clinical.domain.entity.ClinicalInterpretationHistory.class));
     }
 }

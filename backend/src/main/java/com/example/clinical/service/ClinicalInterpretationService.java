@@ -13,6 +13,10 @@ import com.example.clinical.dto.ProvisionalProblemRequest;
 import com.example.clinical.dto.ProvisionalProblemResponse;
 import com.example.clinical.repository.ClinicalInterpretationRepository;
 import com.example.clinical.repository.ClinicalProblemReferenceRepository;
+import com.example.clinical.domain.entity.ClinicalInterpretationHistory;
+import com.example.clinical.domain.entity.ClinicalInterpretationProblemHistory;
+import com.example.clinical.repository.ClinicalInterpretationHistoryRepository;
+import com.example.clinical.repository.ClinicalInterpretationProblemHistoryRepository;
 import com.example.clinical.repository.EncounterRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -30,6 +34,8 @@ public class ClinicalInterpretationService {
     private final ClinicalInterpretationRepository interpretationRepository;
     private final EncounterRepository encounterRepository;
     private final ClinicalProblemReferenceRepository problemReferenceRepository;
+    private final ClinicalInterpretationHistoryRepository historyRepository;
+    private final ClinicalInterpretationProblemHistoryRepository problemHistoryRepository;
 
     @Transactional
     public ClinicalInterpretationResponse createInterpretation(UUID encounterId, ClinicalInterpretationRequest request) {
@@ -62,6 +68,8 @@ public class ClinicalInterpretationService {
             throw new IllegalStateException("Cannot modify a finalized clinical interpretation");
         }
 
+        snapshotInterpretation(interpretation);
+
         interpretation.setRecommendedAction(request.getRecommendedAction());
 
         // Clear existing problems
@@ -80,6 +88,43 @@ public class ClinicalInterpretationService {
         ClinicalInterpretation saved = interpretationRepository.save(interpretation);
 
         return mapToProvisionalResponse(saved);
+    }
+
+    @Transactional
+    public ClinicalInterpretationResponse submitInterpretation(UUID interpretationId) {
+        ClinicalInterpretation interpretation = interpretationRepository.findById(interpretationId)
+                .orElseThrow(() -> new IllegalArgumentException("Clinical Interpretation not found"));
+
+        if (interpretation.getClinicalAssessmentStatus() != ClinicalAssessmentStatus.DRAFT) {
+            throw new IllegalStateException("Only DRAFT interpretations can be submitted");
+        }
+
+        snapshotInterpretation(interpretation);
+        interpretation.setClinicalAssessmentStatus(ClinicalAssessmentStatus.SUBMITTED);
+
+        ClinicalInterpretation saved = interpretationRepository.save(interpretation);
+        return mapToResponse(saved);
+    }
+
+    private void snapshotInterpretation(ClinicalInterpretation interpretation) {
+        ClinicalInterpretationHistory history = new ClinicalInterpretationHistory();
+        history.setInterpretation(interpretation);
+        history.setVersionNumber(interpretation.getVersion());
+        history.setEvidenceSummary(interpretation.getEvidenceSummary());
+        history.setClinicalAssessmentStatus(interpretation.getClinicalAssessmentStatus());
+        history.setRecommendedAction(interpretation.getRecommendedAction());
+        history.setCreatedBy(interpretation.getCreatedBy());
+        historyRepository.save(history);
+
+        for (ClinicalInterpretationProblem problem : interpretation.getProblems()) {
+            ClinicalInterpretationProblemHistory probHistory = new ClinicalInterpretationProblemHistory();
+            probHistory.setInterpretation(interpretation);
+            probHistory.setProblem(problem.getProblem());
+            probHistory.setVersionNumber(interpretation.getVersion());
+            // Since problem associations don't have createdBy naturally in our model right now, we use interpretation's
+            probHistory.setCreatedBy(interpretation.getCreatedBy());
+            problemHistoryRepository.save(probHistory);
+        }
     }
 
     private ClinicalInterpretationResponse mapToResponse(ClinicalInterpretation interpretation) {

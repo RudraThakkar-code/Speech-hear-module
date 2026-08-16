@@ -45,4 +45,9 @@ public class ClinicalInterpretationController {
             @Valid @RequestBody ProvisionalAssessmentRequest request) {
         return ResponseEntity.ok(interpretationService.recordProvisionalAssessment(interpretationId, request));
     }
+
+    @PostMapping("/clinical-interpretations/{interpretationId}/submit")
+    public ResponseEntity<ClinicalInterpretationResponse> submitInterpretation(@PathVariable UUID interpretationId) {
+        return ResponseEntity.ok(interpretationService.submitInterpretation(interpretationId));
+    }
 }

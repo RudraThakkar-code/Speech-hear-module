@@ -104,7 +104,11 @@ public class ClinicalInterpretationIntegrationTest {
         ClinicalInterpretationRequest req = new ClinicalInterpretationRequest("Sum", ClinicalAssessmentStatus.DRAFT, ClinicalRecommendedAction.THERAPY);
         ClinicalInterpretationResponse interpretation = service.createInterpretation(testEncounter.getId(), req);
 
-        // Note: Full status progression would require service methods or setters, which we can simulate by saving
+        ClinicalInterpretationResponse draftInterpretation = service.createInterpretation(testEncounter.getId(), req);
+
+        ClinicalInterpretationResponse submittedInterpretation = service.submitInterpretation(draftInterpretation.getInterpretationId());
+        assertEquals(ClinicalAssessmentStatus.SUBMITTED, submittedInterpretation.getClinicalAssessmentStatus());
+
         // In a real scenario we'd use a dedicated endpoint to update status. For now we will rely on creating it as FINALIZED to test the failure.
         ClinicalInterpretationRequest finalizedReq = new ClinicalInterpretationRequest("Sum", ClinicalAssessmentStatus.FINALIZED, ClinicalRecommendedAction.THERAPY);
         ClinicalInterpretationResponse finalizedInterpretation = service.createInterpretation(testEncounter.getId(), finalizedReq);

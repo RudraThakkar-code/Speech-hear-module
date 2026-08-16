@@ -30,3 +30,6 @@ CREATE DOMAIN IF NOT EXISTS speech_rate_observation AS VARCHAR;
 CREATE DOMAIN IF NOT EXISTS speech_rate_unit AS VARCHAR;
 CREATE DOMAIN IF NOT EXISTS clinical_assessment_status AS VARCHAR;
 CREATE DOMAIN IF NOT EXISTS clinical_recommended_action AS VARCHAR;
+CREATE DOMAIN IF NOT EXISTS supervisor_review_status AS VARCHAR;
+CREATE DOMAIN IF NOT EXISTS supervisor_action AS VARCHAR;
+CREATE DOMAIN IF NOT EXISTS correction_status AS VARCHAR;
