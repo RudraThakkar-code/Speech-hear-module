@@ -28,7 +28,7 @@ public class VoiceObjectiveMeasurement extends AuditableEntity {
     @Column(name = "parameter_name", nullable = false)
     private String parameterName;
 
-    @Column(name = "value", nullable = false)
+    @Column(name = "\"value\"", nullable = false)
     private BigDecimal value;
 
     @Column(name = "unit", nullable = false)
