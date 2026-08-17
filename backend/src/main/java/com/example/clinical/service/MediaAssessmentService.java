@@ -1,6 +1,11 @@
 package com.example.clinical.service;
 
 import com.example.clinical.domain.entity.*;
+import com.example.clinical.domain.enums.LoudnessObservation;
+import com.example.clinical.domain.enums.MeasurementSource;
+import com.example.clinical.domain.enums.PitchObservation;
+import com.example.clinical.domain.enums.ResonanceObservation;
+import com.example.clinical.domain.enums.VoiceQuality;
 import com.example.clinical.repository.*;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -28,11 +33,13 @@ public class MediaAssessmentService {
         VoiceAssessment v = new VoiceAssessment();
         v.setEncounter(encounterRepository.findById(encounterId).orElseThrow(() -> new IllegalArgumentException("Encounter not found")));
         v.setVoiceSample(speechSampleRepository.findById(sampleId).orElseThrow(() -> new IllegalArgumentException("Speech sample not found")));
-        v.setPitchObservation(String.valueOf(body.get("pitchObservation")));
-        v.setLoudnessObservation(String.valueOf(body.get("loudnessObservation")));
+        v.setPitchObservation(PitchObservation.valueOf(String.valueOf(body.get("pitchObservation")).trim().toUpperCase()));
+        v.setLoudnessObservation(LoudnessObservation.valueOf(String.valueOf(body.get("loudnessObservation")).trim().toUpperCase()));
         Object q = body.get("voiceQuality");
-        v.setVoiceQuality(q instanceof java.util.Collection<?> c ? c.stream().map(String::valueOf).toArray(String[]::new) : new String[] { String.valueOf(q) });
-        v.setResonanceObservation(String.valueOf(body.get("resonanceObservation")));
+        v.setVoiceQuality(q instanceof java.util.Collection<?> c
+                ? c.stream().map(value -> VoiceQuality.valueOf(String.valueOf(value).trim().toUpperCase())).toArray(VoiceQuality[]::new)
+                : new VoiceQuality[] { VoiceQuality.valueOf(String.valueOf(q).trim().toUpperCase()) });
+        v.setResonanceObservation(ResonanceObservation.valueOf(String.valueOf(body.get("resonanceObservation")).trim().toUpperCase()));
         v.setVoiceConcernFlag(Boolean.parseBoolean(String.valueOf(body.getOrDefault("voiceConcernFlag", false))));
         return voiceAssessmentRepository.save(v);
     }
@@ -44,7 +51,7 @@ public class MediaAssessmentService {
         m.setParameterName(String.valueOf(body.get("parameterName")));
         m.setValue(new BigDecimal(String.valueOf(body.get("value"))));
         m.setUnit(String.valueOf(body.get("unit")));
-        m.setMeasurementSource(String.valueOf(body.get("measurementSource")));
+        m.setMeasurementSource(MeasurementSource.valueOf(String.valueOf(body.get("measurementSource")).trim().toUpperCase()));
         m.setMeasurementMethod(String.valueOf(body.get("measurementMethod")));
         return measurementRepository.save(m);
     }
