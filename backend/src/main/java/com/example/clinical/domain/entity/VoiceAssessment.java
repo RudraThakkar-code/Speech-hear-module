@@ -36,7 +36,9 @@ public class VoiceAssessment extends AuditableEntity {
     @JdbcTypeCode(SqlTypes.NAMED_ENUM)
     private String loudnessObservation;
 
-    @Column(name = "voice_quality", nullable = false, columnDefinition = "voice_quality[]")
+    // PostgreSQL accepts the SQL-standard ARRAY spelling as equivalent to [];
+    // H2 parses this form for test-time schema generation.
+    @Column(name = "voice_quality", nullable = false, columnDefinition = "voice_quality ARRAY")
     @JdbcTypeCode(SqlTypes.ARRAY)
     private String[] voiceQuality;
 
