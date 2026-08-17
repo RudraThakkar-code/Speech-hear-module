@@ -1,5 +1,6 @@
 package com.example.clinical.domain.entity;
 
+import com.example.clinical.domain.enums.MeasurementSource;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -34,9 +35,10 @@ public class VoiceObjectiveMeasurement extends AuditableEntity {
     @Column(name = "unit", nullable = false)
     private String unit;
 
+    @Enumerated(EnumType.STRING)
     @Column(name = "measurement_source", nullable = false, columnDefinition = "measurement_source")
     @JdbcTypeCode(SqlTypes.NAMED_ENUM)
-    private String measurementSource;
+    private MeasurementSource measurementSource;
 
     @Column(name = "measurement_method", nullable = false)
     private String measurementMethod;
