@@ -68,3 +68,23 @@ CREATE DOMAIN IF NOT EXISTS clinical_discussion_priority AS VARCHAR;
 CREATE DOMAIN IF NOT EXISTS clinical_discussion_status AS VARCHAR;
 CREATE DOMAIN IF NOT EXISTS doctor_recommendation_status AS VARCHAR;
 CREATE DOMAIN IF NOT EXISTS doctor_recommendation_type AS VARCHAR;
+
+-- Test-only support for the clinical interpretation version-history writes.
+-- These tables mirror the columns used by ClinicalInterpretationService.snapshot().
+-- They intentionally omit production-only foreign keys because schema-h2.sql runs
+-- before Hibernate creates the JPA tables under ddl-auto=create-drop.
+CREATE TABLE IF NOT EXISTS clinical_interpretation_history (
+    clinical_interpretation_id UUID NOT NULL,
+    version_number INTEGER NOT NULL,
+    evidence_summary VARCHAR(10000) NOT NULL,
+    clinical_assessment_status clinical_assessment_status NOT NULL,
+    recommended_action clinical_recommended_action NOT NULL,
+    PRIMARY KEY (clinical_interpretation_id, version_number)
+);
+
+CREATE TABLE IF NOT EXISTS clinical_interpretation_problem_history (
+    clinical_interpretation_id UUID NOT NULL,
+    version_number INTEGER NOT NULL,
+    problem_code VARCHAR(50) NOT NULL,
+    PRIMARY KEY (clinical_interpretation_id, version_number, problem_code)
+);
