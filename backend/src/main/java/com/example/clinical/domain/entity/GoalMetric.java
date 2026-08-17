@@ -34,7 +34,9 @@ public class GoalMetric extends AuditableEntity {
     @Column(name = "metric_name", nullable = false)
     private String metricName;
 
-    @Column(name = "value", nullable = false)
+    // The PostgreSQL schema intentionally keeps the column name `value`.
+    // Quoting it lets H2 parse the same identifier because VALUE is reserved there.
+    @Column(name = "\"value\"", nullable = false)
     private BigDecimal value;
 
     @Column(name = "unit", nullable = false)
