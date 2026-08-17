@@ -1,5 +1,9 @@
 package com.example.clinical.domain.entity;
 
+import com.example.clinical.domain.enums.LoudnessObservation;
+import com.example.clinical.domain.enums.PitchObservation;
+import com.example.clinical.domain.enums.ResonanceObservation;
+import com.example.clinical.domain.enums.VoiceQuality;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -28,21 +32,24 @@ public class VoiceAssessment extends AuditableEntity {
     @JoinColumn(name = "voice_sample_id", nullable = false)
     private SpeechSample voiceSample;
 
+    @Enumerated(EnumType.STRING)
     @Column(name = "pitch_observation", nullable = false, columnDefinition = "pitch_observation")
     @JdbcTypeCode(SqlTypes.NAMED_ENUM)
-    private String pitchObservation;
+    private PitchObservation pitchObservation;
 
+    @Enumerated(EnumType.STRING)
     @Column(name = "loudness_observation", nullable = false, columnDefinition = "loudness_observation")
     @JdbcTypeCode(SqlTypes.NAMED_ENUM)
-    private String loudnessObservation;
+    private LoudnessObservation loudnessObservation;
 
     @Column(name = "voice_quality", nullable = false)
     @JdbcTypeCode(SqlTypes.ARRAY)
-    private String[] voiceQuality;
+    private VoiceQuality[] voiceQuality;
 
+    @Enumerated(EnumType.STRING)
     @Column(name = "resonance_observation", nullable = false, columnDefinition = "resonance_observation")
     @JdbcTypeCode(SqlTypes.NAMED_ENUM)
-    private String resonanceObservation;
+    private ResonanceObservation resonanceObservation;
 
     @Column(name = "voice_concern_flag", nullable = false)
     private boolean voiceConcernFlag;
