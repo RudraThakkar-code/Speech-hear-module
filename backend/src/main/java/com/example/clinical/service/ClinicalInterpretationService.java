@@ -98,25 +98,37 @@ public class ClinicalInterpretationService {
 
     private void snapshot(ClinicalInterpretation interpretation) {
         int version = interpretation.getVersion() == null ? 1 : interpretation.getVersion();
+
         jdbcTemplate.update("""
                 INSERT INTO clinical_interpretation_history
                 (clinical_interpretation_id, version_number, evidence_summary, clinical_assessment_status, recommended_action)
-                VALUES (?, ?, ?, CAST(? AS clinical_assessment_status), CAST(? AS clinical_recommended_action))
-                ON CONFLICT (clinical_interpretation_id, version_number) DO NOTHING
+                SELECT ?, ?, ?, CAST(? AS clinical_assessment_status), CAST(? AS clinical_recommended_action)
+                WHERE NOT EXISTS (
+                    SELECT 1
+                    FROM clinical_interpretation_history
+                    WHERE clinical_interpretation_id = ? AND version_number = ?
+                )
                 """,
                 interpretation.getClinicalInterpretationId(), version,
                 interpretation.getEvidenceSummary(),
                 interpretation.getClinicalAssessmentStatus().name(),
-                interpretation.getRecommendedAction().name());
+                interpretation.getRecommendedAction().name(),
+                interpretation.getClinicalInterpretationId(), version);
 
         jdbcTemplate.update("""
                 INSERT INTO clinical_interpretation_problem_history
                 (clinical_interpretation_id, version_number, problem_code)
-                SELECT clinical_interpretation_id, ?, problem_code
-                FROM clinical_interpretation_problem
-                WHERE clinical_interpretation_id = ?
-                ON CONFLICT (clinical_interpretation_id, version_number, problem_code) DO NOTHING
-                """, version, interpretation.getClinicalInterpretationId());
+                SELECT cip.clinical_interpretation_id, ?, cip.problem_code
+                FROM clinical_interpretation_problem cip
+                WHERE cip.clinical_interpretation_id = ?
+                  AND NOT EXISTS (
+                      SELECT 1
+                      FROM clinical_interpretation_problem_history ciph
+                      WHERE ciph.clinical_interpretation_id = cip.clinical_interpretation_id
+                        AND ciph.version_number = ?
+                        AND ciph.problem_code = cip.problem_code
+                  )
+                """, version, interpretation.getClinicalInterpretationId(), version);
     }
 
     private ClinicalInterpretationResponse mapToResponse(ClinicalInterpretation interpretation) {
