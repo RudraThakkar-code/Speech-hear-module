@@ -8,9 +8,9 @@
 </head>
 <body>
   <header class="topbar">
-    <div class="brand">Speech-Language Clinical Management</div>
+    <div class="brand">🎤 Speech-Language Clinical Management</div>
     <nav>
-      <button data-view="dashboard">Dashboard</button>
+      <button data-view="dashboard" class="active">Dashboard</button>
       <button data-view="patients">Patients</button>
       <button data-view="assessments">Assessments</button>
       <button data-view="supervision">Supervision</button>
@@ -23,29 +23,179 @@
   <template id="dashboard-template">
     <section>
       <h1>Clinical Dashboard</h1>
+      <div id="status" class="status-message"></div>
       <div class="grid">
-        <article class="card"><h2>Active Cases</h2><p id="activeCases">—</p></article>
-        <article class="card"><h2>Pending Reviews</h2><p id="pendingReviews">—</p></article>
-        <article class="card"><h2>Follow-ups</h2><p id="followUps">—</p></article>
-        <article class="card"><h2>Doctor Discussions</h2><p id="discussions">—</p></article>
+        <article class="card">
+          <h2>Active Cases</h2>
+          <p id="activeCases" class="stat-number">—</p>
+        </article>
+        <article class="card">
+          <h2>Pending Reviews</h2>
+          <p id="pendingReviews" class="stat-number">—</p>
+        </article>
+        <article class="card">
+          <h2>Follow-ups</h2>
+          <p id="followUps" class="stat-number">—</p>
+        </article>
+        <article class="card">
+          <h2>Doctor Discussions</h2>
+          <p id="discussions" class="stat-number">—</p>
+        </article>
       </div>
       <div class="card flow-card">
-        <h2>Clinical Flow</h2>
-        <div class="flow">Patient → Case → Encounter → Hearing → Speech Sample → Articulation → Fluency → Interpretation → Supervisor → Follow-up</div>
+        <h2>Clinical Workflow</h2>
+        <div class="flow">
+          <span class="step">👤 Patient</span>
+          <span class="arrow">→</span>
+          <span class="step">📋 Case</span>
+          <span class="arrow">→</span>
+          <span class="step">🏥 Encounter</span>
+          <span class="arrow">→</span>
+          <span class="step">👂 Hearing</span>
+          <span class="arrow">→</span>
+          <span class="step">🎙️ Speech</span>
+          <span class="arrow">→</span>
+          <span class="step">💬 Analysis</span>
+          <span class="arrow">→</span>
+          <span class="step">✅ Review</span>
+        </div>
       </div>
     </section>
   </template>
 
   <template id="patients-template">
-    <section><h1>Patients</h1><div class="card"><p>Patient registration and longitudinal case management interface.</p><button class="primary">New Patient</button></div></section>
+    <section>
+      <h1>Patient Management</h1>
+      <div class="card">
+        <h2>Register New Patient</h2>
+        <form id="patientForm" class="form">
+          <div class="form-group">
+            <label>First Name</label>
+            <input type="text" name="firstName" placeholder="John" required>
+          </div>
+          <div class="form-group">
+            <label>Last Name</label>
+            <input type="text" name="lastName" placeholder="Doe" required>
+          </div>
+          <div class="form-group">
+            <label>Date of Birth</label>
+            <input type="date" name="dateOfBirth" required>
+          </div>
+          <div class="form-group">
+            <label>Gender</label>
+            <select name="gender" required>
+              <option value="">Select...</option>
+              <option value="M">Male</option>
+              <option value="F">Female</option>
+              <option value="O">Other</option>
+            </select>
+          </div>
+          <button type="submit" class="primary">Register Patient</button>
+        </form>
+      </div>
+      <div id="patientsList" class="card">
+        <h2>Registered Patients</h2>
+        <div id="patientsContent">Loading...</div>
+      </div>
+    </section>
   </template>
 
   <template id="assessments-template">
-    <section><h1>Clinical Assessments</h1><div class="grid three"><article class="card">Hearing Screening</article><article class="card">Speech Sampling</article><article class="card">Articulation</article><article class="card">Fluency</article><article class="card">Clinical Interpretation</article><article class="card">Provisional Assessment</article></div></section>
+    <section>
+      <h1>Clinical Assessments</h1>
+      <div class="grid three">
+        <article class="card assessment-card" data-assessment="hearing">
+          <h3>👂 Hearing Screening</h3>
+          <p>Assess hearing acuity and detect potential issues</p>
+          <button class="primary">Start Assessment</button>
+        </article>
+        <article class="card assessment-card" data-assessment="speech">
+          <h3>🎙️ Speech Sampling</h3>
+          <p>Record and analyze speech samples</p>
+          <button class="primary">Start Assessment</button>
+        </article>
+        <article class="card assessment-card" data-assessment="articulation">
+          <h3>💬 Articulation</h3>
+          <p>Evaluate sound production and clarity</p>
+          <button class="primary">Start Assessment</button>
+        </article>
+        <article class="card assessment-card" data-assessment="fluency">
+          <h3>🌊 Fluency</h3>
+          <p>Analyze speech flow and rhythm</p>
+          <button class="primary">Start Assessment</button>
+        </article>
+        <article class="card assessment-card" data-assessment="voice">
+          <h3>🔊 Voice Quality</h3>
+          <p>Assess voice characteristics and quality</p>
+          <button class="primary">Start Assessment</button>
+        </article>
+        <article class="card assessment-card" data-assessment="interpretation">
+          <h3>📊 Clinical Interpretation</h3>
+          <p>Synthesize findings and recommendations</p>
+          <button class="primary">Start Assessment</button>
+        </article>
+      </div>
+    </section>
   </template>
 
   <template id="supervision-template">
-    <section><h1>Supervisor Review</h1><div class="card"><p>DRAFT → SUBMITTED → UNDER REVIEW → FINALIZED</p><div class="review-actions"><button>Approve</button><button>Return for Correction</button><button>Modify</button></div></div></section>
+    <section>
+      <h1>Supervisor Review & Approval</h1>
+      <div class="card">
+        <h2>Case Review Status</h2>
+        <div class="review-workflow">
+          <div class="workflow-step">
+            <span class="step-number">1</span>
+            <span class="step-name">Draft</span>
+          </div>
+          <div class="workflow-step">
+            <span class="step-number">2</span>
+            <span class="step-name">Submitted</span>
+          </div>
+          <div class="workflow-step">
+            <span class="step-number">3</span>
+            <span class="step-name">Under Review</span>
+          </div>
+          <div class="workflow-step">
+            <span class="step-number">4</span>
+            <span class="step-name">Finalized</span>
+          </div>
+        </div>
+      </div>
+      <div class="card">
+        <h2>Review Actions</h2>
+        <div class="review-actions">
+          <button class="approve">✅ Approve Case</button>
+          <button class="return">↩️ Return for Correction</button>
+          <button class="modify">✏️ Modify Assessment</button>
+          <button class="finalize">🔒 Finalize Case</button>
+        </div>
+      </div>
+    </section>
+  </template>
+
+  <template id="doctor-template">
+    <section>
+      <h1>Doctor Portal - Case Recommendations</h1>
+      <div class="card">
+        <h2>Pending Doctor Recommendations</h2>
+        <table class="table">
+          <thead>
+            <tr>
+              <th>Patient</th>
+              <th>Case ID</th>
+              <th>Recommendation Status</th>
+              <th>Action</th>
+            </tr>
+          </thead>
+          <tbody id="doctorTable">
+            <tr>
+              <td colspan="4" class="loading">Loading recommendations...</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
   </template>
 
   <template id="doctor-template">

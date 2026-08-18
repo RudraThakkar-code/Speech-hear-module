@@ -514,7 +514,6 @@ CREATE TABLE voice_assessment (
     voice_sample_id UUID NOT NULL REFERENCES speech_sample(sample_id),
     pitch_observation pitch_observation NOT NULL,
     loudness_observation loudness_observation NOT NULL,
-    voice_quality voice_quality[] NOT NULL,
     resonance_observation resonance_observation NOT NULL,
     voice_concern_flag BOOLEAN NOT NULL,
 
@@ -525,6 +524,12 @@ CREATE TABLE voice_assessment (
     updated_at TIMESTAMP WITH TIME ZONE,
     version INT DEFAULT 1 NOT NULL,
     deleted_at TIMESTAMP WITH TIME ZONE
+);
+
+CREATE TABLE voice_assessment_voice_quality (
+    voice_assessment_id UUID NOT NULL REFERENCES voice_assessment(voice_assessment_id) ON DELETE CASCADE,
+    voice_quality voice_quality NOT NULL,
+    PRIMARY KEY (voice_assessment_id, voice_quality)
 );
 
 CREATE TABLE voice_objective_measurement (

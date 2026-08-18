@@ -309,11 +309,19 @@ Case 1 ─── N LanguageHistory (Versions)
 | `voice_sample_id` | UUID | NO | FK → `SpeechSample.sample_id` | |
 | `pitch_observation` | ENUM | NO | | |
 | `loudness_observation` | ENUM | NO | | |
-| `voice_quality` | ENUM[] | NO | | `BREATHY`, `HARSH`, `HOARSE`, `NASAL`, `TYPICAL` |
 | `resonance_observation` | ENUM | NO | | `TYPICAL`, `HYPERNASAL`, `HYPONASAL`, `MIXED` |
 | `voice_concern_flag` | BOOLEAN| NO | | |
 
-### 11.2 `VoiceObjectiveMeasurement`
+* **Note:** `voice_quality` is a many-to-many relationship handled by a join table `voice_assessment_voice_quality`.
+
+### 11.2 `VoiceAssessmentVoiceQuality` (Join Table)
+| Field | Type | Null | Key / Constraint | Notes |
+|---|---|---|---|---|
+| `voice_assessment_id` | UUID | NO | PK, FK → `VoiceAssessment` | |
+| `voice_quality` | ENUM | NO | PK, FK → `voice_quality` enum values | `BREATHY`, `HARSH`, `HOARSE`, `NASAL`, `TYPICAL` |
+
+
+### 11.3 `VoiceObjectiveMeasurement`
 | Field | Type | Null | Key / Constraint | Notes |
 |---|---|---|---|---|
 | `measurement_id` | UUID | NO | PK | |

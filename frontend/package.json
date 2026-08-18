@@ -1,0 +1,15 @@
+{
+  "name": "speech-clinical-frontend",
+  "version": "1.0.0",
+  "description": "Frontend for Speech-Language Clinical Management",
+  "type": "module",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node server.js --dev"
+  },
+  "keywords": ["clinical", "speech", "language"],
+  "author": "",
+  "license": "MIT",
+  "devDependencies": {},
+  "dependencies": {}
+}

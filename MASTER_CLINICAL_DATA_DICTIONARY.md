@@ -251,11 +251,11 @@ This document defines the single source of truth for the clinical data collected
 | `voice_sample_id` | Link to speech sample (Sustained vowel, etc.) | UUID | Yes | Valid ref | Auto-generated | System |
 | `pitch_observation` | Clinician observation of pitch | Enum | Yes | Valid enum | Structured Observation | Therapist |
 | `loudness_observation` | Clinician observation of loudness | Enum | Yes | Valid enum | Structured Observation | Therapist |
-| `voice_quality` | Breathy, Harsh, Hoarse, Nasal, Typical | List(Enums) | Yes | Valid enums | Structured Observation | Therapist |
+| `voice_quality` | Breathy, Harsh, Hoarse, Nasal, Typical. This is a one-to-many relationship. | List(Enums) | Yes | Valid enums | Structured Observation | Therapist |
 | `resonance_observation`| Typical, Hypernasal, Hyponasal, Mixed | Enum | Yes | Valid enum | Structured Observation | Therapist |
 | `voice_concern_flag` | Indicates need for further diagnostic voice pathway | Boolean | Yes | True/False | Structured Observation | Therapist |
 
-### 16B. Voice Objective Measurement (Abstracted for Future AI/Acoustic Integration)
+### 16B. Voice Objective Measurement
 | Field | Description | Data type | Required? | Validation | Data classification | Data provenance |
 |---|---|---|---|---|---|---|
 | `measurement_id` | Unique ID for acoustic metric | UUID | Yes | Unique | Auto-generated | System |

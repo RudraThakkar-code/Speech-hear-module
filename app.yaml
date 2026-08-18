@@ -1,0 +1,74 @@
+name: speech-clinical-app
+services:
+- name: database
+  github:
+    branch: main
+    repo: your-username/speech-hear-module
+  image:
+    registry: docker.io
+    registry_username: your-dockerhub-username
+    name: postgres:14
+  envs:
+  - key: POSTGRES_USER
+    value: postgres
+  - key: POSTGRES_PASSWORD
+    scope: RUN_AND_BUILD_TIME
+    value: ${DB_PASSWORD}
+  - key: POSTGRES_DB
+    value: speech_clinical_prod
+  http_port: 5432
+  health_check:
+    http_path: ""
+  cors:
+    allow_origins: []
+
+- name: backend
+  github:
+    branch: main
+    repo: your-username/speech-hear-module
+  build_command: cd backend && mvn clean package -DskipTests
+  dockerfile_path: backend/Dockerfile
+  envs:
+  - key: SPRING_DATASOURCE_URL
+    value: postgresql://database:5432/speech_clinical_prod
+  - key: SPRING_DATASOURCE_USERNAME
+    value: postgres
+  - key: SPRING_DATASOURCE_PASSWORD
+    scope: RUN_AND_BUILD_TIME
+    value: ${DB_PASSWORD}
+  - key: SPRING_JPA_HIBERNATE_DDL_AUTO
+    value: validate
+  - key: SPRING_PROFILES_ACTIVE
+    value: postgres
+  http_port: 8080
+  health_check:
+    http_path: /api/cases
+
+- name: frontend
+  github:
+    branch: main
+    repo: your-username/speech-hear-module
+  source_dir: frontend
+  build_command: npm install
+  run_command: node server.js
+  envs:
+  - key: PORT
+    value: "3000"
+  - key: BACKEND_URL
+    value: https://${BACKEND_DOMAIN}
+  http_port: 3000
+
+databases:
+- engine: PG
+  name: speech_clinical_db
+  version: "14"
+
+static_sites:
+- name: frontend-static
+  github:
+    branch: main
+    repo: your-username/speech-hear-module
+  source_dir: frontend
+  routes:
+  - path: /
+    component_name: frontend
