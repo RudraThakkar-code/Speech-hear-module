@@ -6,17 +6,15 @@ import lombok.AllArgsConstructor;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import lombok.Setter;
 
 import java.io.Serializable;
 import java.util.UUID;
 
 @Embeddable
 @Getter
-@Setter
-@EqualsAndHashCode
 @NoArgsConstructor
 @AllArgsConstructor
+@EqualsAndHashCode
 public class ClinicalInterpretationProblemId implements Serializable {
 
     @Column(name = "clinical_interpretation_id")

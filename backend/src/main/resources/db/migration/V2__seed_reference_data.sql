@@ -1,3 +1,8 @@
+--
+-- V2: Seed Reference Data
+-- This script is auto-generated from POSTGRESQL_SCHEMA.md (v1.0)
+--
+
 INSERT INTO language_reference (language_code, language_name) VALUES
 ('EN', 'English'),
 ('HI', 'Hindi'),

@@ -1,6 +1,12 @@
+--
+-- V1: Initial Schema Generation
+-- This script is auto-generated from POSTGRESQL_SCHEMA.md (v1.0)
+--
 
+-- 1. Extensions
 CREATE EXTENSION IF NOT EXISTS pgcrypto;
 
+-- 2. Enums
 
 -- Identity Enums
 CREATE TYPE user_role AS ENUM ('PATIENT', 'PARENT_GUARDIAN', 'THERAPIST', 'SUPERVISOR', 'DOCTOR', 'ADMIN', 'SYSTEM');
@@ -77,7 +83,11 @@ CREATE TYPE interpretation_status AS ENUM ('NOT_INTERPRETED', 'CLINICIAN_INTERPR
 CREATE TYPE data_classification AS ENUM ('RAW', 'OBSERVATION', 'INTERPRETATION', 'AI_GENERATED');
 CREATE TYPE data_provenance AS ENUM ('PATIENT', 'PARENT', 'THERAPIST', 'SUPERVISOR', 'DOCTOR', 'SYSTEM');
 
+-- Doctor Portal & Clinical Collaboration Enums
+CREATE TYPE clinical_discussion_status AS ENUM ('OPEN', 'RESOLVED', 'CLOSED');
+CREATE TYPE clinical_discussion_priority AS ENUM ('LOW', 'ROUTINE', 'URGENT');
 
+-- 3. User / Identity
 CREATE TABLE "users" (
     user_id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     role user_role NOT NULL,
@@ -87,7 +97,7 @@ CREATE TABLE "users" (
     created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 
-
+-- 4. Reference Tables
 CREATE TABLE language_reference (
     language_code VARCHAR(10) PRIMARY KEY,
     language_name TEXT NOT NULL
@@ -137,7 +147,7 @@ CREATE TABLE articulation_target_library (
     CONSTRAINT uq_articulation_target UNIQUE (language_code, target_type, phoneme, word, position, target_version)
 );
 
-
+-- 5. Patient
 CREATE TABLE patient (
     patient_id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
     legal_name TEXT NOT NULL,
@@ -162,7 +172,7 @@ CREATE TABLE patient (
 
 ALTER TABLE clinical_document ADD CONSTRAINT fk_document_patient FOREIGN KEY (patient_id) REFERENCES patient(patient_id);
 
-
+-- 6. Case
 CREATE TABLE clinical_case (
     case_id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
     patient_id UUID NOT NULL REFERENCES patient(patient_id) ON DELETE RESTRICT,
@@ -181,7 +191,7 @@ CREATE TABLE clinical_case (
 
 ALTER TABLE clinical_document ADD CONSTRAINT fk_document_case FOREIGN KEY (case_id) REFERENCES clinical_case(case_id);
 
-
+-- 7. History / Version Tables (Case-scoped)
 CREATE TABLE chief_complaint (
     history_id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
     case_id UUID NOT NULL REFERENCES clinical_case(case_id),
@@ -334,7 +344,7 @@ CREATE TABLE language_history_heard_at_home (
     PRIMARY KEY(history_id, language_code)
 );
 
-
+-- 8. Encounter
 CREATE TABLE encounter (
     encounter_id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
     case_id UUID NOT NULL REFERENCES clinical_case(case_id) ON DELETE RESTRICT,
@@ -359,7 +369,7 @@ CREATE TABLE encounter (
     deleted_at TIMESTAMP WITH TIME ZONE
 );
 
-
+-- 9. Assessment Tables
 CREATE TABLE hearing_screening (
     screening_id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
     encounter_id UUID NOT NULL REFERENCES encounter(encounter_id),
@@ -563,7 +573,7 @@ CREATE TABLE clinical_interpretation_problem (
     PRIMARY KEY(clinical_interpretation_id, problem_code)
 );
 
-
+-- 10. Therapy Tables
 CREATE TABLE therapy_goal (
     goal_id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
     case_id UUID NOT NULL REFERENCES clinical_case(case_id),
@@ -701,7 +711,7 @@ CREATE TABLE progress_record (
     deleted_at TIMESTAMP WITH TIME ZONE
 );
 
-
+-- 11. Supervision
 CREATE TABLE supervisor_review (
     review_id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
     supervisor_id UUID NOT NULL REFERENCES "users"(user_id),
@@ -736,7 +746,7 @@ CREATE TABLE clinical_rating (
     therapy_effectiveness_score INT NOT NULL CHECK (therapy_effectiveness_score BETWEEN 1 AND 5)
 );
 
-
+-- 12. Reports & Notifications
 CREATE TABLE generated_report (
     generated_report_id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
     case_id UUID NOT NULL REFERENCES clinical_case(case_id),
@@ -753,7 +763,7 @@ CREATE TABLE notification (
     created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW() NOT NULL
 );
 
-
+-- 13. Consent
 CREATE TABLE consent (
     consent_id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
     patient_id UUID NOT NULL REFERENCES patient(patient_id),
@@ -770,7 +780,7 @@ CREATE TABLE consent (
     CONSTRAINT chk_consent_withdrawn CHECK (withdrawn_at IS NULL OR withdrawn_at >= consented_at)
 );
 
-
+-- 14. AI Artifacts
 CREATE TABLE ai_artifact (
     ai_artifact_id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
     source_speech_sample_id UUID REFERENCES speech_sample(sample_id),
@@ -796,7 +806,7 @@ CREATE TABLE ai_artifact (
     )
 );
 
-
+-- 15. Audit Log
 CREATE TABLE audit_log (
     audit_log_id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
     table_name TEXT NOT NULL,
@@ -807,39 +817,7 @@ CREATE TABLE audit_log (
     occurred_at TIMESTAMP WITH TIME ZONE DEFAULT NOW() NOT NULL
 );
 
-
--- Identity & Access
-CREATE INDEX idx_patient_name ON patient(legal_name);
-CREATE INDEX idx_case_patient ON clinical_case(patient_id);
-CREATE INDEX idx_case_therapist ON clinical_case(assigned_therapist_id);
-
--- Encounters & History
-CREATE INDEX idx_encounter_case ON encounter(case_id);
-CREATE INDEX idx_history_case ON medical_history(case_id);
-
--- Assessment Lookups
-CREATE INDEX idx_assignment_encounter ON assessment_task_assignment(encounter_id);
-CREATE INDEX idx_speech_sample_assignment ON speech_sample(assignment_id);
-CREATE INDEX idx_articulation_encounter ON articulation_production_attempt(encounter_id);
-
--- Therapy & Supervision
-CREATE INDEX idx_therapy_plan_case ON therapy_plan(case_id);
-CREATE INDEX idx_therapy_session_encounter ON therapy_session(encounter_id);
-CREATE INDEX idx_home_practice_session ON home_practice(session_id);
-CREATE INDEX idx_supervisor_review_interpretation ON supervisor_review(reviewed_clinical_interpretation_id);
-CREATE INDEX idx_supervisor_review_plan ON supervisor_review(reviewed_therapy_plan_id);
-
--- System
-CREATE INDEX idx_audit_record ON audit_log(table_name, record_id);
-CREATE INDEX idx_ai_artifact_sample ON ai_artifact(source_speech_sample_id);
-
--- ============================================================
--- DOCTOR PORTAL & COLLABORATION (Phase 18)
--- ============================================================
-
-CREATE TYPE clinical_discussion_status AS ENUM ('OPEN', 'RESOLVED', 'CLOSED');
-CREATE TYPE clinical_discussion_priority AS ENUM ('LOW', 'ROUTINE', 'URGENT');
-
+-- 16. Doctor Portal & Clinical Collaboration
 CREATE TABLE doctor_case_assignment (
     assignment_id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
     case_id UUID NOT NULL REFERENCES clinical_case(case_id),
@@ -869,7 +847,7 @@ CREATE TABLE clinical_discussion_message (
     author_id UUID NOT NULL REFERENCES "users"(user_id),
     message_text TEXT NOT NULL,
     linked_document_id UUID REFERENCES clinical_document(document_id),
-    linked_record_id UUID, -- Polymorphic fallback reference if they want to link to a generic clinical entity
+    linked_record_id UUID,
 
     created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW() NOT NULL,
     updated_at TIMESTAMP WITH TIME ZONE
@@ -881,11 +859,38 @@ CREATE TABLE doctor_recommendation (
     doctor_id UUID NOT NULL REFERENCES "users"(user_id),
     discussion_id UUID REFERENCES clinical_discussion(discussion_id),
     recommendation_text TEXT NOT NULL,
-    medical_diagnosis TEXT, -- Distinct from provisional clinical problem
+    medical_diagnosis TEXT,
 
     created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW() NOT NULL,
     updated_at TIMESTAMP WITH TIME ZONE
 );
 
+-- 17. Indexes
+-- Identity & Access
+CREATE INDEX idx_patient_name ON patient(legal_name);
+CREATE INDEX idx_case_patient ON clinical_case(patient_id);
+CREATE INDEX idx_case_therapist ON clinical_case(assigned_therapist_id);
+
+-- Encounters & History
+CREATE INDEX idx_encounter_case ON encounter(case_id);
+CREATE INDEX idx_history_case ON medical_history(case_id);
+
+-- Assessment Lookups
+CREATE INDEX idx_assignment_encounter ON assessment_task_assignment(encounter_id);
+CREATE INDEX idx_speech_sample_assignment ON speech_sample(assignment_id);
+CREATE INDEX idx_articulation_encounter ON articulation_production_attempt(encounter_id);
+
+-- Therapy & Supervision
+CREATE INDEX idx_therapy_plan_case ON therapy_plan(case_id);
+CREATE INDEX idx_therapy_session_encounter ON therapy_session(encounter_id);
+CREATE INDEX idx_home_practice_session ON home_practice(session_id);
+CREATE INDEX idx_supervisor_review_interpretation ON supervisor_review(reviewed_clinical_interpretation_id);
+CREATE INDEX idx_supervisor_review_plan ON supervisor_review(reviewed_therapy_plan_id);
+
+-- System
+CREATE INDEX idx_audit_record ON audit_log(table_name, record_id);
+CREATE INDEX idx_ai_artifact_sample ON ai_artifact(source_speech_sample_id);
+
+-- Doctor Portal
 CREATE INDEX idx_doctor_case_assignment ON doctor_case_assignment(case_id);
 CREATE INDEX idx_clinical_discussion_case ON clinical_discussion(case_id);

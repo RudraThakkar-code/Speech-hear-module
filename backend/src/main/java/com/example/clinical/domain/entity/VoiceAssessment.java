@@ -42,7 +42,11 @@ public class VoiceAssessment extends AuditableEntity {
     @JdbcTypeCode(SqlTypes.NAMED_ENUM)
     private LoudnessObservation loudnessObservation;
 
-    @Column(name = "voice_quality", nullable = false)
+    @Column(
+            name = "voice_quality",
+            nullable = false,
+            columnDefinition = "voice_quality[]"
+    )
     @JdbcTypeCode(SqlTypes.ARRAY)
     private VoiceQuality[] voiceQuality;
 
